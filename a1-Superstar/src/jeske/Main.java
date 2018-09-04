@@ -19,15 +19,20 @@ public class Main {
   private static Map<String, Person> people = new HashMap<>();
 
   public static void main(String[] args) throws IOException, InterruptedException {
-    CountDownLatch guiSignal = new CountDownLatch(1);
-    Output.main(guiSignal);
-    guiSignal.await();
+    set(LEVEL_DEBUG);
 
-    set(LEVEL_INFO);
+    if (INFO && !DEBUG) {
+      CountDownLatch guiSignal = new CountDownLatch(1);
+      Output.main(guiSignal);
+      guiSignal.await();
+    }
+
+
+
 
 
     BufferedReader br = new BufferedReader(new InputStreamReader(
-            Main.class.getResourceAsStream("/beispieldaten/superstar1.txt")
+            Main.class.getResourceAsStream("/beispieldaten/superstar4.txt")
     ));
 
 
@@ -44,6 +49,10 @@ public class Main {
 
   private static void solve(MutableGraph<Person> relationGraph) {
     int querys = 0;
+    int lastQuerryCount = 0;
+    //Allready checked relationships.
+    Map<Person, List<Person>> checkedRelations = new HashMap<>();
+    relationGraph.nodes().forEach(person -> checkedRelations.put(person, new ArrayList<>()));
 
     List<Person> candidates = new ArrayList<>();
     candidates.addAll(people.values());
@@ -54,13 +63,19 @@ public class Main {
 
     Person person = candidates.get(0);
 
+    debug("Finding candidate");
     while (candidates.size() > 1) {
       for (int i = 0; i < candidates.size(); i++) {
         Person testedPerson = candidates.get(i);
         if (testedPerson == person)
           continue;
 
+        if (checkedRelations.get(person).contains(testedPerson))
+          continue;
+
+        //debug("Test relation between " + person + " and " + testedPerson);
         querys++;
+        checkedRelations.get(person).add(testedPerson);
         if (relationGraph.hasEdgeConnecting(person, testedPerson)) {
           candidates.remove(person);
           askedGraph.putEdge(person, testedPerson);
@@ -73,28 +88,43 @@ public class Main {
     }
 
     Person lastCandidate = candidates.get(0);
+    debug("Found candidate " + lastCandidate + " with " + querys + " querys.");
     info("Letzter Kandidat für den Superstar ist " + lastCandidate);
 
-    // FIXME: 04.09.2018 keine Kontrolle ob bereits geprüft
+    lastQuerryCount = querys;
+    debug("Check that the candidate doesnt follow anyone.");
     //Testing if the last candidate follows no one
     for (Person p : people.values()) {
       if (p == lastCandidate)
         continue;
 
+      if (checkedRelations.get(lastCandidate).contains(p))
+        continue;
+
+      //debug("Test relation between " + lastCandidate + " and " + p);
       querys++;
+      checkedRelations.get(lastCandidate).add(p);
       if (relationGraph.hasEdgeConnecting(lastCandidate, p)) {
         error(lastCandidate + " ist kein Superstar, da er " + p + " folgt.");
         return;
       }
     }
+    debug("Completed check with " + (querys - lastQuerryCount) + " querys");
 
+    lastQuerryCount = querys;
+    debug("Check that really everyone follows the candidate");
 
-    // FIXME: 04.09.2018 keine Kontrolle ob bereits geprüft
     for (Person p : people.values()) {
       if (p == lastCandidate)
         continue;
 
+      if (checkedRelations.get(p).contains(lastCandidate))
+        continue;
+
+
+      //debug("Test relation between " + p + " and " + lastCandidate);
       querys++;
+      checkedRelations.get(p).add(lastCandidate);
       if (!relationGraph.hasEdgeConnecting(p, lastCandidate)) {
         error(lastCandidate + " ist kein Superstar, da ihm nicht alle folgen.");
         return;
@@ -102,6 +132,7 @@ public class Main {
         askedGraph.putEdge(p, lastCandidate);
       }
     }
+    debug("Completed check with " + (querys - lastQuerryCount) + " querys");
 
     //Last check for safety
     int connnectionsToCandidate = askedGraph.inDegree(lastCandidate);
