@@ -10,11 +10,15 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Main {
 
     public static void main(String[] args) throws IOException {
         Log.set(Log.LEVEL_DEBUG);
+
+       // Test.main(null);
 
         BufferedReader reader = new BufferedReader(
                 new InputStreamReader(
@@ -24,18 +28,11 @@ public class Main {
 
 
         StringBuilder stringBuilder = new StringBuilder();
-        String currentLine;
-        while((currentLine = reader.readLine()) != null){
-          Log.debug("VAR Sentence = " + currentLine);
-          StringTokenizer tokenizer = new StringTokenizer(currentLine," -,.'=/\\()1234567890" );
-          while(tokenizer.hasMoreTokens()){
-            String word = tokenizer.nextToken();
-            String twistedWord = twistWord(word);
-            stringBuilder.append(twistedWord).append(" ");
-          }
-        }
+        String line = reader.readLine();
+        String[] words = line.split("([A-zöäüÖÄÜ])+");
+        line = Util.replace(line, Pattern.compile("([A-zöäüÖÄÜ])+"), match -> twistWord(match.group()));
 
-        Log.info("TWISTED TEXT: " + stringBuilder.toString());
+       // Log.info("TWISTED TEXT: " + stringBuilder.toString());
     }
 
   private static String twistWord(String nextToken) {
