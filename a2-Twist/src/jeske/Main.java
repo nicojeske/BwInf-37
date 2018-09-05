@@ -7,7 +7,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Main {
@@ -16,6 +15,10 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         Log.set(Log.LEVEL_INFO);
+
+      //TODO Groß und Kleinschreibung beim Decoden beibehalten
+      //TODO GUI
+
 
       BufferedReader directoryReader = new BufferedReader(
               new InputStreamReader(
@@ -59,13 +62,13 @@ public class Main {
   }
 
   private static String decodeWord(String group) {
+    //TODO Respektieren der Groß und kleinschreibung (einfach vom eigentlichen Wort ersten Buchstaben übernehmen?)
       group = group.toLowerCase();
     char[] chars = group.toCharArray();
     Arrays.sort(chars);
     String charsString = new String(chars);
     Log.debug("Finding Dict entry for -> " + group);
     if(dict.containsKey(charsString)){
-
       Log.debug("Possibilities -> " + dict.get(charsString));
       String ret = "";
       if(dict.get(charsString).size() > 1) {
