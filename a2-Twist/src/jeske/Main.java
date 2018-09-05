@@ -6,55 +6,121 @@ import com.esotericsoftware.minlog.Log;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Random;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Main {
 
+  private static Map<String, List<String>> dict = new HashMap<>();
+
     public static void main(String[] args) throws IOException {
-        Log.set(Log.LEVEL_DEBUG);
+        Log.set(Log.LEVEL_INFO);
 
-       // Test.main(null);
+      BufferedReader directoryReader = new BufferedReader(
+              new InputStreamReader(
+                      Main.class.getResourceAsStream("/beispieldaten/woerterliste.txt")
+              )
+      );
 
-        BufferedReader reader = new BufferedReader(
+      String currLine;
+      while((currLine = directoryReader.readLine()) != null){
+        currLine = currLine.trim();
+        currLine = currLine.toLowerCase();
+        char[] chars = currLine.toCharArray();
+        Arrays.sort(chars);
+        String charsString = new String(chars);
+        if(dict.containsKey(charsString)) {
+          dict.get(charsString).add(currLine);
+        } else {
+          dict.put(charsString, new ArrayList<>());
+          dict.get(charsString).add(currLine);
+        }
+      }
+
+        BufferedReader taskReader = new BufferedReader(
                 new InputStreamReader(
                         Main.class.getResourceAsStream("/beispieldaten/twist1.txt")
                 )
         );
 
-
-        StringBuilder stringBuilder = new StringBuilder();
-        String line = reader.readLine();
-        String[] words = line.split("([A-zöäüÖÄÜ])+");
+        String line = taskReader.readLine();
         line = Util.replace(line, Pattern.compile("([A-zöäüÖÄÜ])+"), match -> twistWord(match.group()));
 
-       // Log.info("TWISTED TEXT: " + stringBuilder.toString());
+        Log.info("TWISTED TEXT: " + line);
+
+        //decodeWord("sniee");
+        Log.info("DECODED: " + decode(line));
     }
 
-  private static String twistWord(String nextToken) {
-    char[] chars = new char[nextToken.length()];
-    Random rng = new Random();
-    chars[0] = nextToken.charAt(0);
-    chars[nextToken.length()-1] = nextToken.charAt(nextToken.length()-1);
-
-    ArrayList<Character> remainingChars = new ArrayList<>();
-    for (int i = 1; i < nextToken.length()-1; i++) {
-      remainingChars.add(nextToken.charAt(i));
-    }
-
-    int numberOfRenamingChars = remainingChars.size();
-    for (int i = 0; i < numberOfRenamingChars; i++) {
-      int randomIndex = rng.nextInt(remainingChars.size());
-      char currChar = remainingChars.get(randomIndex);
-      remainingChars.remove(remainingChars.indexOf(currChar));
-      chars[i+1] = currChar;
-    }
-
-    Log.debug("TWISTED WORD: " + nextToken + " TO " + new String(chars));
-    return new String(chars);
+  private static String decode(String encoded) {
+    String decoded = Util.replace(encoded, Pattern.compile("([A-zöäüÖÄÜ])+"), match -> decodeWord(match.group()));
+    return decoded;
   }
+
+  private static String decodeWord(String group) {
+      group = group.toLowerCase();
+    char[] chars = group.toCharArray();
+    Arrays.sort(chars);
+    String charsString = new String(chars);
+    Log.debug("Finding Dict entry for -> " + group);
+    if(dict.containsKey(charsString)){
+
+      Log.debug("Possibilities -> " + dict.get(charsString));
+      String ret = "";
+      if(dict.get(charsString).size() > 1) {
+        ret = getFittingWord(dict.get(charsString), group.toCharArray());
+      } else {
+        ret = dict.get(charsString).get(0);
+      }
+      Log.debug("Recognized " + group + " -> " + ret);
+      return ret;
+    } else {
+      Log.debug(group + " not found...");
+      return group;
+    }
+  }
+
+  private static String getFittingWord(List<String> words, char[] chars) {
+    char firstLetter = chars[0];
+    char lastLetter = chars[chars.length-1];
+    ArrayList<String> ret = new ArrayList<>();
+    for(String word : words){
+      if(word.charAt(0) == firstLetter && word.charAt(word.length()-1) == lastLetter) {
+        ret.add(word);
+      }
+    }
+
+    if(ret.size() == 1) {
+      return ret.get(0);
+    } else if(ret.size() > 1) {
+      return ret.toString();
+    } else {
+      Log.warn("No fitting word found for " + new String(chars));
+      return new String(chars);
+    }
+  }
+
+  private static String twistWord(String word) {
+
+    if(word.length() <= 3)
+      return word;
+
+    List<Character> charsToTwist = new ArrayList<>();
+    for (char c : word.substring(1, word.length() - 1).toCharArray()) {
+      charsToTwist.add(c);
+    }
+
+    Collections.shuffle(charsToTwist);
+
+    StringBuilder twistedPartBuilder = new StringBuilder();
+    charsToTwist.forEach(twistedPartBuilder::append);
+
+    String twistedWord = ""+word.charAt(0) + twistedPartBuilder.toString() + word.charAt(word.length()-1);
+
+    if(twistedWord.equals(word))
+      return twistWord(word);
+
+    return twistedWord;
+    }
 }
