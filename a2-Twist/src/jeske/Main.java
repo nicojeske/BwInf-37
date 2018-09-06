@@ -57,26 +57,31 @@ public class Main {
     return decoded;
   }
 
-  private static String decodeWord(String group) {
-    //TODO Respektieren der Groß und kleinschreibung (einfach vom eigentlichen Wort ersten Buchstaben übernehmen?)
-      group = group.toLowerCase();
-    char[] chars = group.toCharArray();
+  private static String decodeWord(String word) {
+    char firstChar = word.charAt(0);
+    word = word.toLowerCase();
+    char[] chars = word.toCharArray();
     Arrays.sort(chars);
     String charsString = new String(chars);
-    Log.debug("Finding Dict entry for -> " + group);
+    Log.debug("Finding Dict entry for -> " + word);
     if(dict.containsKey(charsString)){
       Log.debug("Possibilities -> " + dict.get(charsString));
       String ret = "";
       if(dict.get(charsString).size() > 1) {
-        ret = getFittingWord(dict.get(charsString), group.toCharArray());
+        ret = getFittingWord(dict.get(charsString), word.toCharArray());
+        if(ret.charAt(0) != '[') {
+          ret = firstChar + ret.substring(1);
+        }
       } else {
         ret = dict.get(charsString).get(0);
+        ret = firstChar + ret.substring(1);
       }
-      Log.debug("Recognized " + group + " -> " + ret);
+
+      Log.debug("Recognized " + word + " -> " + ret);
       return ret;
     } else {
-      Log.debug(group + " not found...");
-      return group;
+      Log.debug(word + " not found...");
+      return firstChar + word.substring(1);
     }
   }
 
@@ -96,7 +101,7 @@ public class Main {
       return ret.toString();
     } else {
       Log.warn("No fitting word found for " + new String(chars));
-      return new String(chars);
+      return  "[?"+ new String(chars)+"?]";
     }
   }
 
@@ -118,8 +123,8 @@ public class Main {
     String twistedWord = ""+word.charAt(0) + twistedPartBuilder.toString() + word.charAt(word.length()-1);
 
     //FIXME Crash if word like "jjjjjj"
-    if(twistedWord.equals(word))
-      return twistWord(word);
+    //if(twistedWord.equals(word))
+    //  return twistWord(word);
 
     return twistedWord;
     }

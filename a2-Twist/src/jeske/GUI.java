@@ -1,6 +1,10 @@
 package jeske;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.*;
+import java.util.Objects;
 
 public class GUI {
   private JButton twistenButton;
@@ -85,6 +89,30 @@ public class GUI {
     });
 
 
+    openFileButton.addActionListener(e -> {
+      try {
+        File file = Util.getUserFile("Text zum twisten (.txt)", "txt");
+        assert file != null;
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        textAreaToTwist.setText("");
+        reader.lines().forEach(textAreaToTwist::append);
+      } catch (FileNotFoundException e1) {
+        JOptionPane.showMessageDialog(null, "Fehler beim einlesen der Datei..");
+      }
+    });
+
+    openFileButton2.addActionListener(e -> {
+      try {
+        File file = Util.getUserFile("Text zum enttwisten (.txt)", "txt");
+        Objects.requireNonNull(file);
+
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        textAreaToDecode.setText("");
+        reader.lines().forEach(textAreaToDecode::append);
+      } catch (FileNotFoundException | NullPointerException el) {
+        JOptionPane.showMessageDialog(null, "Fehler beim einlesen der Datei..");
+      }
+    });
   }
 
   public static void main(String[] args) throws ClassNotFoundException, UnsupportedLookAndFeelException, InstantiationException, IllegalAccessException {
