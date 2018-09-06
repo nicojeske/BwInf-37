@@ -3,6 +3,7 @@ package jeske;
 
 import com.esotericsoftware.minlog.Log;
 
+import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -13,12 +14,8 @@ public class Main {
 
   private static Map<String, List<String>> dict = new HashMap<>();
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException, UnsupportedLookAndFeelException, InstantiationException, IllegalAccessException {
         Log.set(Log.LEVEL_INFO);
-
-      //TODO Groß und Kleinschreibung beim Decoden beibehalten
-      //TODO GUI
-
 
       BufferedReader directoryReader = new BufferedReader(
               new InputStreamReader(
@@ -26,37 +23,36 @@ public class Main {
               )
       );
 
-      String currLine;
-      while((currLine = directoryReader.readLine()) != null){
-        currLine = currLine.trim();
-        currLine = currLine.toLowerCase();
-        char[] chars = currLine.toCharArray();
-        Arrays.sort(chars);
-        String charsString = new String(chars);
-        if(dict.containsKey(charsString)) {
-          dict.get(charsString).add(currLine);
-        } else {
-          dict.put(charsString, new ArrayList<>());
-          dict.get(charsString).add(currLine);
-        }
-      }
+      initializeDictionary(directoryReader);
 
-        BufferedReader taskReader = new BufferedReader(
-                new InputStreamReader(
-                        Main.class.getResourceAsStream("/beispieldaten/twist1.txt")
-                )
-        );
+      GUI.main(null);
 
-        String line = taskReader.readLine();
-        line = Util.replace(line, Pattern.compile("([A-zöäüÖÄÜ])+"), match -> twistWord(match.group()));
-
-        Log.info("TWISTED TEXT: " + line);
-
-        //decodeWord("sniee");
-        Log.info("DECODED: " + decode(line));
+      //TODO Groß und Kleinschreibung beim Decoden beibehalten
+      //TODO GUI
     }
 
-  private static String decode(String encoded) {
+    public String twist(String sentence) {
+      return Util.replace(sentence, Pattern.compile("([A-zöäüÖÄÜ])+"), match -> twistWord(match.group()));
+    }
+
+  private static void initializeDictionary(BufferedReader directoryReader) throws IOException {
+    String currLine;
+    while((currLine = directoryReader.readLine()) != null){
+      currLine = currLine.trim();
+      currLine = currLine.toLowerCase();
+      char[] chars = currLine.toCharArray();
+      Arrays.sort(chars);
+      String charsString = new String(chars);
+      if(dict.containsKey(charsString)) {
+        dict.get(charsString).add(currLine);
+      } else {
+        dict.put(charsString, new ArrayList<>());
+        dict.get(charsString).add(currLine);
+      }
+    }
+  }
+
+  public String decode(String encoded) {
     String decoded = Util.replace(encoded, Pattern.compile("([A-zöäüÖÄÜ])+"), match -> decodeWord(match.group()));
     return decoded;
   }
@@ -121,6 +117,7 @@ public class Main {
 
     String twistedWord = ""+word.charAt(0) + twistedPartBuilder.toString() + word.charAt(word.length()-1);
 
+    //FIXME Crash if word like "jjjjjj"
     if(twistedWord.equals(word))
       return twistWord(word);
 
