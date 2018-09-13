@@ -3,10 +3,29 @@ Garten mit Länge x Breite), wobei das erste dem Beispiel in der
 Aufgabenstellung entspricht:
 
 1.
-25 x 15, 30 x 15, 25 x 20, 25 x 15.
+25 15
+30 15
+25 20
+25 15
+
+25 15
+15 30
+15 25
+25 20
 
 2.
 6 x 3, 2 x 2, 3 x 1, 4 x 4, 4 x 4.
+6 3
+2 2
+3 1
+4 4
+4 4
 
 3.
 4 x 4, 3 x 2, 6 x 1, 5 x 2, 5 x 3.
+
+4 4
+3 2
+6 1
+5 2
+5 3
