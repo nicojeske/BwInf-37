@@ -17,6 +17,11 @@ import java.io.FileOutputStream;
 import java.util.Arrays;
 
 class Utility {
+  /**
+   * Saves the graph as a .graphML for the use with yEd
+   * @param graph Graph
+   * @throws FileNotFoundException File not found
+   */
   static void writeGraphML(Graph<Person> graph) throws FileNotFoundException {
     GraphWriter graphWriter = new GraphWriter(new FileOutputStream("graph.graphml"));
     graphWriter.startDocument();
