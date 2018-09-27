@@ -2,8 +2,6 @@ package jeske;
 
 import javax.swing.*;
 import java.io.*;
-import java.net.URI;
-import java.net.URL;
 import java.util.Objects;
 
 /**
@@ -31,38 +29,18 @@ public class GUI {
    * Initializes the Twister instance and the action listeners.
    */
   private void initialize() {
-    URL woerterliste = this.getClass().getResource("/beispieldaten/woerterliste.txt");
-    File dictionaryFile = new File(String.valueOf(woerterliste));
-
-    //If the system cannot find the dictionary file, the user must specify it himself.
-    if(!dictionaryFile.exists()) {
-      File userFile = Util.getUserFile("Wörterbuch", "txt");
-      //No choice -> show error
-      if(userFile == null) {
-        JOptionPane.showMessageDialog(null,
-                "Fehler bei der Dateiauswahl", "Fehler", JOptionPane.ERROR_MESSAGE);
-      } else {
-        dictionaryFile = userFile;
-      }
-    }
-
-    //Try's to create a Twister. If there is a problem with the dictionary file, ask the user
-    //if he wants to try again. If yes call initialize again. If no -> exit,
-    Twister twister = null;
-    try {
-      twister = new Twister(dictionaryFile);
-    } catch (IOException e) {
-      int userChoice = JOptionPane.showConfirmDialog(null, "Ungültiges Wörterbuch. Erneut versuchen?",
-              "Fehler", JOptionPane.YES_NO_OPTION);
-      if (userChoice == JOptionPane.YES_OPTION) {
-        initialize();
-        return;
-      } else {
-        System.exit(1);
-      }
-    }
 
     //Twist given text, when twistButton is pressed.
+    Twister twister = null;
+    try {
+      twister = new Twister();
+    } catch (IOException e) {
+      JOptionPane.showMessageDialog(null,
+              "Fehler beim einlesen der Wörterliste. Das Programm wird beendet",
+              "Fehler",
+              JOptionPane.ERROR_MESSAGE);
+    }
+
     Twister finalTwister = twister;
     twistButton.addActionListener(e -> {
       String text = textAreaToTwist.getText();

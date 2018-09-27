@@ -2,7 +2,9 @@ package jeske;
 
 import com.esotericsoftware.minlog.Log;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -16,17 +18,14 @@ class Twister {
    */
   private static Map<String, List<String>> dict = new HashMap<>();
 
-  Twister(File dictionaryPath) throws IOException {
+  Twister() throws IOException {
     Log.set(Log.LEVEL_INFO);
 
     BufferedReader directoryReader = new BufferedReader(
-            new FileReader(dictionaryPath)
+            new InputStreamReader(
+                    this.getClass().getResourceAsStream("/beispieldaten/woerterliste.txt")
+            )
     );
-//    BufferedReader directoryReader = new BufferedReader(
-//            new InputStreamReader(
-//                    this.getClass().getResourceAsStream("/beispieldaten/woerterliste.txt")
-//            )
-//    );
 
     initializeDictionary(directoryReader);
   }
