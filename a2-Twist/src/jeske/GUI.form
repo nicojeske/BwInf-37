@@ -8,7 +8,7 @@
     <properties/>
     <border type="none"/>
     <children>
-      <component id="97aa7" class="javax.swing.JButton" binding="twistenButton" default-binding="true">
+      <component id="97aa7" class="javax.swing.JButton" binding="twistButton" default-binding="true">
         <constraints>
           <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -56,7 +56,7 @@
           </component>
         </children>
       </scrollpane>
-      <component id="ae91f" class="javax.swing.JButton" binding="openFileButton" default-binding="true">
+      <component id="ae91f" class="javax.swing.JButton" binding="openFileTwistButton" default-binding="true">
         <constraints>
           <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -64,7 +64,7 @@
           <text value="Open file..."/>
         </properties>
       </component>
-      <component id="9941d" class="javax.swing.JButton" binding="openFileButton2" default-binding="true">
+      <component id="9941d" class="javax.swing.JButton" binding="openFileUntwistButton" default-binding="true">
         <constraints>
           <grid row="3" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>

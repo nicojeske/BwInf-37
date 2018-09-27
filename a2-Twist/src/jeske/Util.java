@@ -6,8 +6,16 @@ import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Util {
-  public static String replace(String input, Pattern regex, StringReplacerCallback callback) {
+class Util {
+
+  /**
+   * Given a string and a RegEx pattern, apply a given method to each hit and replace it with the result of the method.
+   * @param input input string
+   * @param regex regex pattern
+   * @param callback replace method
+   * @return replaced string
+   */
+  static String replace(String input, Pattern regex, StringReplacerCallback callback) {
     StringBuffer resultString = new StringBuffer();
     Matcher regexMatcher = regex.matcher(input);
     while (regexMatcher.find()) {
@@ -22,9 +30,9 @@ public class Util {
    * Lässt den Anwender eine Eingabedatei auswählen und gibt diese Datei zurück.
    *
    * @throws IllegalArgumentException Der User hat keine Datei ausgewählt
-   * @return vom User ausgwählte Datei
-   * @param fileDescription
-   * @param fileExtension
+   * @return vom User ausgwählte Datei. Null wenn keine Datei ausgewählt wurde.
+   * @param fileDescription Beschreibung der Datei
+   * @param fileExtension Dateiformat (txt, png, jpg, usw.)
    */
   static File getUserFile(String fileDescription, String fileExtension) {
     //Erstellung eines neuen Filechoosers
@@ -46,24 +54,5 @@ public class Util {
     }
 
     return null;
-  }
-
-  /**
-   * Lässt den User zwischen den gegebenen Möglichkeiten auswählen
-   *
-   * @param message Nachricht
-   * @param title   Titel
-   * @param choice  Auswahlmöglichkeiten
-   * @return Wahl des Users
-   */
-  static int askUser(String message, String title, Object[] choice) {
-    return JOptionPane.showOptionDialog(null,
-            message,
-            title,
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.QUESTION_MESSAGE,
-            null,
-            choice,
-            0);
   }
 }
