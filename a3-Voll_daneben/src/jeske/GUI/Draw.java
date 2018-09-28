@@ -1,40 +1,26 @@
 package jeske.GUI;
 
-import jeske.Point;
+import jeske.SolverUtil;
+import jeske.Util;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Draw extends JPanel {
-  final static double EPSILON = 1e-12;
   private List<Integer> numbers;
   private List<Integer> solution;
   private List<Integer> oldSoulution;
-  private List<List<Integer>> list;
+  private List<List<Integer>> areas;
 
   public Draw(List<Integer> numbers) {
     this.numbers = numbers;
     JFrame frame = new JFrame("Draw");
     frame.setContentPane(this);
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    frame.setSize((int) Toolkit.getDefaultToolkit().getScreenSize().getWidth(), 200);
+    frame.setSize((int) Toolkit.getDefaultToolkit().getScreenSize().getWidth(), 250);
     frame.setVisible(true);
-  }
-
-  public static double map(double valueCoord1,
-                           double startCoord1, double endCoord1,
-                           double startCoord2, double endCoord2) {
-
-    if (Math.abs(endCoord1 - startCoord1) < EPSILON) {
-      throw new ArithmeticException("/ 0");
-    }
-
-    double offset = startCoord2;
-    double ratio = (endCoord2 - startCoord2) / (endCoord1 - startCoord1);
-    return ratio * (valueCoord1 - startCoord1) + offset;
   }
 
   public void setSolution(List<Integer> solution) {
@@ -49,21 +35,21 @@ public class Draw extends JPanel {
     int highestNum = numbers.get(numbers.size() - 1);
     int screenWidth = this.getWidth();
 
-    if (list != null) {
-      AtomicInteger i2 = new AtomicInteger(0);
-      list.forEach(l -> {
+    //Draw Areas
+    if (areas != null) {
+      AtomicInteger i = new AtomicInteger(0);
+      areas.forEach(l -> {
         int low = l.get(0);
         int high = l.get(l.size() - 1);
-        int xStart = (int) map(low, lowestNum, highestNum, 50, screenWidth - 50);
-        int xEnd = (int) map(high, lowestNum, highestNum, 50, screenWidth - 50);
+        int xStart = (int) Util.map(low, lowestNum, highestNum, 50, screenWidth - 50);
+        int xEnd = (int) Util.map(high, lowestNum, highestNum, 50, screenWidth - 50);
 
-        if (i2.get() % 2 == 0)
+        if (i.get() % 2 == 0)
           g2d.setColor(Color.gray);
         else
           g2d.setColor(Color.pink);
         g2d.fillRect(xStart, 80, xEnd - xStart, 40);
-        i2.addAndGet(1);
-
+        i.addAndGet(1);
       });
     }
 
@@ -71,12 +57,12 @@ public class Draw extends JPanel {
 
 
     g2d.drawLine(50, 100, screenWidth - 50, 100);
+
+    //Draw numbers
     AtomicInteger i = new AtomicInteger(1);
     numbers.forEach(number -> {
-      int mappedValue = (int) map(number, lowestNum, highestNum, 50, screenWidth - 50);
-      //System.out.println(mappedValue);
+      int mappedValue = (int) Util.map(number, lowestNum, highestNum, 50, screenWidth - 50);
       FontMetrics fm = g2d.getFontMetrics();
-      int x = (getWidth() - fm.stringWidth(number.toString())) / 2;
       g2d.drawString(number.toString(), mappedValue - fm.stringWidth(number.toString()) / 2, 70 - fm.getHeight() * i.get());
       i.addAndGet(1);
       g2d.drawLine(mappedValue, 100, mappedValue, 70 - fm.getHeight() * i.get() + 20);
@@ -85,66 +71,54 @@ public class Draw extends JPanel {
       }
     });
 
-
     if (oldSoulution != null) {
-      drawSolution(g2d, lowestNum, highestNum, screenWidth, Color.red, oldSoulution);
+      //Draw a solution
+      drawSolution(g2d, lowestNum, highestNum, screenWidth, Color.red, oldSoulution, 0);
     }
 
     if (solution != null) {
-      drawSolution(g2d, lowestNum, highestNum, screenWidth, Color.BLUE, solution);
+      //Draw a solution
+      drawSolution(g2d, lowestNum, highestNum, screenWidth, Color.BLUE, solution, 20);
+      int gain = (25 * numbers.size()) - SolverUtil.calcExpenses(numbers, solution);
+      g2d.drawString("Beste Auswahl: " + solution.toString() + " mit einem Gewinn von " + gain + "€", 50, 200);
     }
 
   }
 
-  private void drawSolution(Graphics2D g2d, int lowestNum, int highestNum, int screenWidth, Color color, List<Integer> solution) {
-    List<Point> points = new ArrayList<>();
+  /**
+   * Draws a solution
+   *
+   * @param g2d         Graphic context
+   * @param lowestNum   lowest Number from all numbers
+   * @param highestNum  highest Number from all numbers
+   * @param screenWidth Screen width
+   * @param color       Color
+   * @param solution    Solution
+   * @param yOffset     YOffset
+   */
+  private void drawSolution(Graphics2D g2d, int lowestNum, int highestNum, int screenWidth, Color color, List<Integer> solution, int yOffset) {
     solution.forEach(sol -> {
-      points.add(new Point(sol));
-      //Main.initializePoints(points, numbers);
-    });
-    // Main.initializePoints2(points, numbers);
-    points.forEach(sol -> {
-      int mappedValue = (int) map(sol.getElement(), lowestNum, highestNum, 50, screenWidth - 50);
+      int mappedValue = (int) Util.map(sol, lowestNum, highestNum, 50, screenWidth - 50);
       FontMetrics fm = g2d.getFontMetrics();
       g2d.setColor(color);
-      g2d.drawLine(mappedValue, 100, mappedValue, 125);
+      g2d.drawLine(mappedValue, 100, mappedValue, 125 + yOffset);
       g2d.setColor(Color.black);
-      g2d.drawString(String.valueOf(sol.getElement()), mappedValue - fm.stringWidth(String.valueOf(sol.getElement())) / 2, 140);
-      if (sol.getRightDiff() != 0) {
-        g2d.drawLine(mappedValue + sol.getRightDiff(), 75, mappedValue + sol.getRightDiff(), 125);
-      }
-      g2d.setColor(Color.BLACK);
+      g2d.drawString(String.valueOf(sol), mappedValue - fm.stringWidth(String.valueOf(sol)) / 2, 140 + yOffset);
     });
   }
 
   /**
-   * Draw a String centered in the middle of a Rectangle.
-   *
-   * @param g    The Graphics instance.
-   * @param text The String to draw.
-   * @param rect The Rectangle to center the text in.
+   * Sets the areas
+   * @param list areas
    */
-  public void drawCenteredString(Graphics g, String text, Rectangle rect, Font font) {
-    // Get the FontMetrics
-    FontMetrics metrics = g.getFontMetrics(font);
-    // Determine the X coordinate for the text
-    int x = rect.x + (rect.width - metrics.stringWidth(text)) / 2;
-    // Determine the Y coordinate for the text (note we add the ascent, as in java 2d 0 is top of the screen)
-    int y = rect.y + ((rect.height - metrics.getHeight()) / 2) + metrics.getAscent();
-    // Set the font
-    g.setFont(font);
-    // Draw the String
-    g.drawString(text, x, y);
+  public void setAreas(List<List<Integer>> list) {
+    this.areas = list;
   }
 
-  public void setShit(List<List<Integer>> list) {
-    this.list = list;
-  }
-
-  public List<Integer> getOldSoulution() {
-    return oldSoulution;
-  }
-
+  /**
+   * Sets the old solution
+   * @param oldSoulution oldSolution
+   */
   public void setOldSoulution(List<Integer> oldSoulution) {
     this.oldSoulution = oldSoulution;
   }
