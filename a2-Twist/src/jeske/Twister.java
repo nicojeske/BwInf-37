@@ -51,9 +51,6 @@ class Twister {
     while((currLine = directoryReader.readLine()) != null){
       //Remove leading and trailing whitespaces and convert string to lowercase letters
       String charsString = convertWordToDictionaryForm(currLine);
-      if(charsString.equals("eein")) {
-        System.out.println();
-      }
       if(dict.containsKey(charsString)) {
         dict.get(charsString).add(currLine);
       } else {
@@ -185,6 +182,24 @@ class Twister {
 
     StringBuilder twistedPartBuilder = new StringBuilder();
     charsToTwist.forEach(twistedPartBuilder::append);
+
+
+    //If the twisted Word is the same as the original, twist it again.
+    if (twistedPartBuilder.toString().equals(word.substring(1, word.length() - 1))) {
+      boolean possible = false;
+      char firstChar = charsToTwist.get(0);
+      for (Character character : charsToTwist) {
+        if (character != firstChar) {
+          possible = true;
+          break;
+        }
+      }
+
+      if (possible) {
+        twistWord(word);
+      }
+    }
+
 
     return ""+word.charAt(0) + twistedPartBuilder.toString() + word.charAt(word.length()-1);
   }
