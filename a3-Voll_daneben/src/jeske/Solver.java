@@ -101,11 +101,36 @@ class Solver {
     //Finding a first solution. For each of the ten parts,
     //the average is calculated and then the ai-number is selected from the part closest to the average.
     List<Integer> aiList = new ArrayList<>();
+    List<Integer> aiList2 = new ArrayList<>();
     for (List<Integer> lis : list) {
       double avg = avg(lis);
       int point = nearestElement(lis, avg);
       aiList.add(point);
-      //System.out.println(lis);
+
+      int small = lis.get(0);
+      int height = lis.get(lis.size() - 1);
+
+      int min = 999999;
+      int minZ = -1;
+
+      for (int z = small; z <= height; z++) {
+        int sum = 0;
+        for (int i = 0; i < lis.size() - 1; i++) {
+          int currNumber = lis.get(i);
+          sum += Math.abs(currNumber - z);
+        }
+
+        if (sum <= min) {
+          min = sum;
+          minZ = z;
+          //System.out.printf("Min: %s Z: %s \n", min, z);
+        }
+      }
+
+      aiList2.add(minZ);
+
+      System.out.printf("Min: %s Z: %s \n", min, minZ);
+      System.out.println("Abschnitt fertig");
     }
 
     draw.setAreas(list);
@@ -113,6 +138,8 @@ class Solver {
     draw.repaint();
 
     Log.info("First Solution: " + aiList + " -> " + (paidMoney - calcExpenses(numbers, aiList)) + " gain.");
+    Log.info("Test Solution: " + aiList2 + " -> " + (paidMoney - calcExpenses(numbers, aiList2)) + " gain.");
+
 
     //For each AI number, take the AI number itself, as well as the number before and after it.
     //e.g. from aiList [5,10,20] -> e.g. [[3,5,7], [7,10,13], [17,20]]
