@@ -8,13 +8,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import static jeske.SolverUtil.*;
 
 /**
  * Solver for the task
  */
-class Solver {
+public class Solver {
   private List<Integer> numbers;
   private Draw draw;
 
@@ -81,87 +81,44 @@ class Solver {
   }
 
   /**
-   * Solves the task
+   * Finds the element in the list that is closest to the given number.
+   *
+   * @param numbers list of numbers
+   * @param avg     number
+   * @return closest element in the list
    */
-  void solve() {
-    //Sort the numbers
-    Collections.sort(numbers);
+  static int nearestElement(List<Integer> numbers, double avg) {
+    if (numbers.size() == 1)
+      return numbers.get(0);
 
-    //Removing duplicate numbers
-    List<Integer> numbersWithoutDuplicates = new ArrayList<>(new HashSet<>(numbers));
-    //Sort numbers in ascending order
-    Collections.sort(numbersWithoutDuplicates);
+    for (int i = 0; i < numbers.size() - 1; i++) {
+      int aiNumber = numbers.get(i);
+      int nextNumber = numbers.get(i + 1);
 
-    //The entire stake
-    int paidMoney = 25 * numbers.size();
+      if (aiNumber == Math.round(avg))
+        return aiNumber;
 
-    //Column the numbers into ten parts
-    List<List<Integer>> list = orderedSplit(numbers, 10);
+      if (nextNumber == Math.round(avg))
+        return nextNumber;
 
-    //Finding a first solution. For each of the ten parts,
-    //the average is calculated and then the ai-number is selected from the part closest to the average.
-    List<Integer> aiList = new ArrayList<>();
-    List<Integer> aiList2 = new ArrayList<>();
-    for (List<Integer> lis : list) {
-      double avg = avg(lis);
-      int point = nearestElement(lis, avg);
-      aiList.add(point);
+      if (aiNumber <= avg && avg < nextNumber) {
+        double distDown = Math.abs(avg - aiNumber);
+        double distUp = Math.abs(avg - nextNumber);
 
-      int small = lis.get(0);
-      int height = lis.get(lis.size() - 1);
+        if (distDown == distUp)
+          return nextNumber;
 
-      int min = 999999;
-      int minZ = -1;
-
-      for (int z = small; z <= height; z++) {
-        int sum = 0;
-        for (int i = 0; i < lis.size() - 1; i++) {
-          int currNumber = lis.get(i);
-          sum += Math.abs(currNumber - z);
-        }
-
-        if (sum <= min) {
-          min = sum;
-          minZ = z;
-          //System.out.printf("Min: %s Z: %s \n", min, z);
+        if (Math.min(distDown, distUp) == distDown) {
+          return aiNumber;
+        } else {
+          return nextNumber;
         }
       }
 
-      aiList2.add(minZ);
-
-      System.out.printf("Min: %s Z: %s \n", min, minZ);
-      System.out.println("Abschnitt fertig");
     }
 
-    draw.setAreas(list);
-    draw.setOldSoulution(aiList);
-    draw.repaint();
-
-    Log.info("First Solution: " + aiList + " -> " + (paidMoney - calcExpenses(numbers, aiList)) + " gain.");
-    Log.info("Test Solution: " + aiList2 + " -> " + (paidMoney - calcExpenses(numbers, aiList2)) + " gain.");
-
-
-    //For each AI number, take the AI number itself, as well as the number before and after it.
-    //e.g. from aiList [5,10,20] -> e.g. [[3,5,7], [7,10,13], [17,20]]
-    List<List<Integer>> variances = getPossibleVariances(numbersWithoutDuplicates, aiList);
-    List<List<Integer>> allPossibilitys = Lists.cartesianProduct(variances);
-
-    //Test all possible solutions and choose the best one.
-    int lowest = 9999999;
-    List<Integer> best = null;
-    for (List<Integer> possibility : allPossibilitys) {
-      int calced = calcExpenses(numbers, possibility);
-      if (calced < paidMoney) {
-        if (calced < lowest) {
-          lowest = calced;
-          best = possibility;
-        }
-      }
-    }
-
-    draw.setSolution(best);
-    draw.repaint();
-    Log.info("Final solution: " + best + " with " + (paidMoney - lowest) + " gain");
+    //The code should not reach this point
+    throw new UnsupportedOperationException();
   }
 
   /**
@@ -194,5 +151,131 @@ class Solver {
       variances.add(currList);
     }
     return variances;
+  }
+
+  /**
+   * Calculates the average of all numbers in the list.
+   *
+   * @param numbers list
+   * @return average
+   */
+  static double avg(List<Integer> numbers) {
+    double sum = 0;
+    double numberOfElements = numbers.size();
+    for (int number : numbers) {
+      sum += number;
+    }
+    return sum / numberOfElements;
+  }
+
+  /**
+   * For a given AI selection, the cost of this will be calculated
+   *
+   * @param numbers   numbers
+   * @param aiNumbers ai numbers
+   * @return cost
+   */
+  public static int calcExpenses(List<Integer> numbers, List<Integer> aiNumbers) {
+    AtomicInteger payments = new AtomicInteger(0);
+
+    for (int number : numbers) {
+
+      for (int i = 0; i < aiNumbers.size() - 1; i++) {
+        int aiNumber = aiNumbers.get(i);
+        int nextNumber = aiNumbers.get(i + 1);
+
+        if (aiNumber <= number && number < nextNumber) {
+          int distDown = Math.abs(number - aiNumber);
+          int distUp = Math.abs(number - nextNumber);
+          payments.addAndGet(Math.min(distDown, distUp));
+          break;
+        }
+        //choosen > highest AI number
+        else if (number > aiNumbers.get(aiNumbers.size() - 1)) {
+          payments.addAndGet(Math.abs(number - aiNumbers.get(aiNumbers.size() - 1)));
+          break;
+        } else if (number < aiNumbers.get(0)) {
+          payments.addAndGet(aiNumbers.get(0) - number);
+          break;
+        }
+      }
+    }
+    return payments.get();
+  }
+
+  /**
+   * Solves the task
+   */
+  void solve() {
+    //Sort the numbers
+    Collections.sort(numbers);
+
+    //Removing duplicate numbers
+    List<Integer> numbersWithoutDuplicates = new ArrayList<>(new HashSet<>(numbers));
+    //Sort numbers in ascending order
+    Collections.sort(numbersWithoutDuplicates);
+
+    //The entire stake
+    int paidMoney = 25 * numbers.size();
+
+    //Column the numbers into ten parts
+    List<List<Integer>> list = orderedSplit(numbers, 10);
+
+    //Finding a first solution. For each of the ten parts,
+    //an number z is searched for which the needed payment is minimal.
+    //The nearest number to z is then saved for the solution.
+    List<Integer> aiList = new ArrayList<>();
+    for (List<Integer> lis : list) {
+      int small = lis.get(0);
+      int height = lis.get(lis.size() - 1);
+
+      int min = 999999;
+      int minZ = -1;
+
+      for (int z = small; z <= height; z++) {
+        int sum = 0;
+        for (int i = 0; i < lis.size() - 1; i++) {
+          int currNumber = lis.get(i);
+          sum += Math.abs(currNumber - z);
+        }
+
+        if (sum <= min) {
+          min = sum;
+          minZ = z;
+          //System.out.printf("Min: %s Z: %s \n", min, z);
+        }
+      }
+
+      aiList.add(nearestElement(lis, minZ));
+    }
+
+    draw.setAreas(list);
+    draw.setOldSoulution(aiList);
+    draw.repaint();
+
+    Log.info("First Solution: " + aiList + " -> " + (paidMoney - calcExpenses(numbers, aiList)) + " gain.");
+
+
+    //For each AI number, take the AI number itself, as well as the number before and after it.
+    //e.g. from aiList [5,10,20] -> e.g. [[3,5,7], [7,10,13], [17,20]]
+    List<List<Integer>> variances = getPossibleVariances(numbersWithoutDuplicates, aiList);
+    List<List<Integer>> allPossibilitys = Lists.cartesianProduct(variances);
+
+    //Test all possible solutions and choose the best one.
+    int lowest = Integer.MAX_VALUE;
+    List<Integer> best = null;
+    for (List<Integer> possibility : allPossibilitys) {
+      int calced = calcExpenses(numbers, possibility);
+      if (calced < paidMoney) {
+        if (calced < lowest) {
+          lowest = calced;
+          best = possibility;
+        }
+      }
+    }
+
+    draw.setSolution(best);
+    draw.repaint();
+    Log.info("Final solution: " + best + " with " + (paidMoney - lowest) + " gain");
   }
 }

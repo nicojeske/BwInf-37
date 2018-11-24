@@ -1,6 +1,6 @@
 package jeske.GUI;
 
-import jeske.SolverUtil;
+import jeske.Solver;
 import jeske.Util;
 
 import javax.swing.*;
@@ -79,7 +79,7 @@ public class Draw extends JPanel {
     if (solution != null) {
       //Draw a solution
       drawSolution(g2d, lowestNum, highestNum, screenWidth, Color.BLUE, solution, 20);
-      int gain = (25 * numbers.size()) - SolverUtil.calcExpenses(numbers, solution);
+      int gain = (25 * numbers.size()) - Solver.calcExpenses(numbers, solution);
       g2d.drawString("Beste Auswahl: " + solution.toString() + " mit einem Gewinn von " + gain + "€", 50, 200);
     }
 
